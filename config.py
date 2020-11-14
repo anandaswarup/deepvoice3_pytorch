@@ -24,7 +24,7 @@ class Config:
     fft_size = 1024,
     hop_size = 256,
     sample_rate = 22050,
-    preemphasis = 0.97,
+    preemphasis_coef = 0.97,
     min_level_db = -100,
     ref_level_db = 20,
 
