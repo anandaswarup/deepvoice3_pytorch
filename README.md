@@ -13,7 +13,7 @@ PyTorch implementation of convolutional neural network based text-to-speech (TTS
 
 ### Configuration
 
-Configuration parameters / hyperparameters are specified in `hparams.py`, and these values are used in all the scripts.
+Configuration parameters / hyperparameters are specified in `config.py`, and these values are used in all the scripts.
 
 ### 0. Download dataset
 
