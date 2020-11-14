@@ -1,11 +1,6 @@
-# DeepVoice3
+# Convolutional Neural Network based TTS models
 
-PyTorch implementation of convolutional networks-based text-to-speech synthesis models based on
-
-1. [arXiv:1710.07654](https://arxiv.org/abs/1710.07654): Deep Voice 3: Scaling Text-to-Speech with Convolutional Sequence Learning.
-2. [arXiv:1710.08969](https://arxiv.org/abs/1710.08969): Efficiently Trainable Text-to-Speech System Based on Deep Convolutional Networks with Guided Attention.
-
-The code in this repository is a modified version of [Ryuichi Yamamoto's implementation of DeepVoice3](https://github.com/r9y9/deepvoice3_pytorch)
+PyTorch implementation of convolutional neural network based text-to-speech (TTS) models. The code in this repository is a modified version of [Ryuichi Yamamoto's implementation of DeepVoice3](https://github.com/r9y9/deepvoice3_pytorch)
 
 ## Highlights
 
@@ -16,15 +11,9 @@ The code in this repository is a modified version of [Ryuichi Yamamoto's impleme
 
 ## Getting started
 
-### Preset parameters
+### Configuration
 
-Configuration parameters / hyperparameters are provided by means of json files in the `config` directory. The following scripts
-
-1. `preprocess.py`
-2. `train.py`
-3. `synthesis.py`
-
-accepts `--config <path to json file>` as an  optional parameter, which specifies the path to a json config file. The same `--config=<path to json file>` must be used throughout preprocessing, training and evaluation.
+Configuration parameters / hyperparameters are specified in `hparams.py`, and these values are used in all the scripts.
 
 ### 0. Download dataset
 
@@ -36,7 +25,7 @@ accepts `--config <path to json file>` as an  optional parameter, which specifie
 Usage:
 
 ```
-python preprocess.py --config <path to json config file> --dataset_path <path to the dataset dir> --out_dir <output dir>
+python preprocess.py --dataset_path <path to the dataset dir> --out_dir <output dir>
 ```
 
 Supported datasets are:
@@ -50,3 +39,6 @@ When this is done, you will see extracted features (mel-spectrograms and linear 
 
 1. [Ryuichi Yamamoto's implementation of DeepVoice3](https://github.com/r9y9/deepvoice3_pytorch)
 
+## References
+1. [arXiv:1710.07654](https://arxiv.org/abs/1710.07654): Deep Voice 3: Scaling Text-to-Speech with Convolutional Sequence Learning.
+2. [arXiv:1710.08969](https://arxiv.org/abs/1710.08969): Efficiently Trainable Text-to-Speech System Based on Deep Convolutional Networks with Guided Attention.
