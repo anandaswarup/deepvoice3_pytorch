@@ -46,6 +46,20 @@ def get_mask_from_lengths(memory, memory_lengths):
     return ~mask
 
 
+def expand_speaker_embed(inputs_btc, speaker_embed=None, tdim=1):
+    """Expand speaker embedding for all timesteps of input
+    """
+    if speaker_embed is None:
+        return None
+    # expand speaker embedding for all time steps
+    # (B, N) -> (B, T, N)
+    ss = speaker_embed.size()
+    speaker_embed_btc = speaker_embed.unsqueeze(1).expand(
+        ss[0], inputs_btc.size(tdim), ss[-1])
+
+    return speaker_embed_btc
+
+
 class GradMultiply(torch.autograd.Function):
     @staticmethod
     def forward(ctx, x, scale):
