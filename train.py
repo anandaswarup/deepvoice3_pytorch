@@ -154,7 +154,10 @@ def save_states(global_step, attn, linear_outputs, input_lengths, logs_dir):
     # Predicted audio signal
     signal = audio.inv_spectrogram(linear_output.T)
     signal /= np.max(np.abs(signal))
+
     wavs_dir = join(logs_dir, "wavs")
+    os.makedirs(wavs_dir, exist_ok=True)
+
     path = join(wavs_dir, f"step{global_step:09d}_predicted.wav")
 
     audio.save_wav(signal, path)
