@@ -84,9 +84,9 @@ class TTSDataset(Dataset):
         assert int(num_frames) == mag.shape[0] == mel.shape[0]
 
         if self.multi_speaker:
-            return text_seq, mag, mel, int(speaker_id)
+            return text_seq, mel, mag, int(speaker_id)
         else:
-            return text_seq, mag, mel
+            return text_seq, mel, mag
 
     def collate_fn(self, batch):
         """Create batch
