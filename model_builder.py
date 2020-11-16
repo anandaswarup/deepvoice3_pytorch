@@ -48,7 +48,6 @@ def deepvoice3_model(
         n_speakers=n_speakers,
         speaker_embed_dim=speaker_embed_dim,
         dropout=dropout,
-        max_positions=max_positions,
         embedding_weight_std=embedding_weight_std,
         # (channels, kernel_size, dilation)
         convolutions=[(h, k, 1), (h, k, 3), (h, k, 9), (h, k, 27), (h, k, 1),
@@ -60,7 +59,6 @@ def deepvoice3_model(
         embed_dim,
         in_dim=mel_dim,
         r=r,
-        padding_idx=padding_idx,
         n_speakers=n_speakers,
         speaker_embed_dim=speaker_embed_dim,
         dropout=dropout,
@@ -100,7 +98,6 @@ def deepvoice3_model(
     model = MultiSpeakerTTSModel(
         seq2seq,
         converter,
-        padding_idx=padding_idx,
         mel_dim=mel_dim,
         linear_dim=linear_dim,
         n_speakers=n_speakers,
