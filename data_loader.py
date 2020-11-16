@@ -47,7 +47,8 @@ class TTSDataset(Dataset):
     def __init__(self, data_dir):
         """Initialize the dataset
         """
-        self.training_instances = _load_training_instances(data_dir)
+        self.training_instances = _load_training_instances(
+            os.path.join(data_dir, "train.txt"))
         self.data_dir = data_dir
         self.frame_lengths = [int(x[2]) for x in self.training_instances]
         self.multi_speaker = len(self.training_instances[0]) == 4
