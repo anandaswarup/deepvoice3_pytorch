@@ -133,7 +133,6 @@ class AttentionSeq2Seq(nn.Module):
         """
         # (B, T, text_embed_dim)
         encoder_outputs = self.encoder(text_sequences,
-                                       lengths=input_lengths,
                                        speaker_embed=speaker_embed)
 
         # Mel: (B, T//r, mel_dim*r)
