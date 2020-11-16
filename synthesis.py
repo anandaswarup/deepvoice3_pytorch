@@ -1,60 +1,43 @@
-# coding: utf-8
-"""
-Synthesis waveform from trained model.
+"""Synthesis script"""
 
-usage: synthesis.py [options] <checkpoint> <text_list_file> <dst_dir>
-
-options:
-    --hparams=<parmas>                Hyper parameters [default: ].
-    --preset=<json>                   Path of preset parameters (json).
-    --checkpoint-seq2seq=<path>       Load seq2seq model from checkpoint path.
-    --checkpoint-postnet=<path>       Load postnet model from checkpoint path.
-    --file-name-suffix=<s>            File name suffix [default: ].
-    --max-decoder-steps=<N>           Max decoder steps [default: 500].
-    --replace_pronunciation_prob=<N>  Prob [default: 0.0].
-    --speaker_id=<id>                 Speaker ID (for multi-speaker model).
-    --output-html                     Output html for blog post.
-    -h, --help               Show help message.
-"""
-from docopt import docopt
-
-import sys
+import argparse
 import os
-from os.path import dirname, join, basename, splitext
+import sys
+from os.path import basename, join, splitext
+
+import numpy as np
+import torch
 
 import audio
-
-import torch
-import numpy as np
-import nltk
-
-# The deepvoice3 model
-from deepvoice3_pytorch import frontend
-from hparams import hparams, hparams_debug_string
-
-from tqdm import tqdm
+from config import Config as cfg
+from frontend import english
+from train import build_model, plot_alignment
 
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
-_frontend = None  # to be set later
 
 
-def tts(model, text, p=0, speaker_id=None, fast=False):
+def tts(model, text, speaker_id=None, fast=False):
     """Convert text to speech waveform given a deepvoice3 model.
-
-    Args:
-        text (str) : Input text to be synthesized
-        p (float) : Replace word to pronounciation if p > 0. Default is 0.
     """
     model = model.to(device)
     model.eval()
+
     if fast:
         model.make_generation_fast_()
 
-    sequence = np.array(_frontend.text_to_sequence(text, p=p))
+    if cfg.frontend == "en":
+        sequence = np.array(english.text_to_sequence(text))
+    else:
+        raise NotImplementedError
+
     sequence = torch.from_numpy(sequence).unsqueeze(0).long().to(device)
-    text_positions = torch.arange(1, sequence.size(-1) + 1).unsqueeze(0).long().to(device)
-    speaker_ids = None if speaker_id is None else torch.LongTensor([speaker_id]).to(device)
+    text_positions = torch.arange(1,
+                                  sequence.size(-1) +
+                                  1).unsqueeze(0).long().to(device)
+
+    speaker_ids = None if speaker_id is None else torch.LongTensor(
+        [speaker_id]).to(device)
 
     # Greedy decoding
     with torch.no_grad():
@@ -83,86 +66,72 @@ def _load(checkpoint_path):
 
 
 if __name__ == "__main__":
-    args = docopt(__doc__)
-    print("Command line args:\n", args)
-    checkpoint_path = args["<checkpoint>"]
-    text_list_file_path = args["<text_list_file>"]
-    dst_dir = args["<dst_dir>"]
-    checkpoint_seq2seq_path = args["--checkpoint-seq2seq"]
-    checkpoint_postnet_path = args["--checkpoint-postnet"]
-    max_decoder_steps = int(args["--max-decoder-steps"])
-    file_name_suffix = args["--file-name-suffix"]
-    replace_pronunciation_prob = float(args["--replace_pronunciation_prob"])
-    output_html = args["--output-html"]
-    speaker_id = args["--speaker_id"]
-    if speaker_id is not None:
-        speaker_id = int(speaker_id)
-    preset = args["--preset"]
+    parser = argparse.ArgumentParser(
+        description="Synthesize text using a trained DeepVoice3 model")
 
-    # Load preset if specified
-    if preset is not None:
-        with open(preset) as f:
-            hparams.parse_json(f.read())
-    # Override hyper parameters
-    hparams.parse(args["--hparams"])
-    assert hparams.name == "deepvoice3"
+    parser.add_argument("--out_dir",
+                        help="Output dir where synthesis output will be saved",
+                        required=True)
 
-    _frontend = getattr(frontend, hparams.frontend)
-    import train
-    train._frontend = _frontend
-    from train import plot_alignment, build_model
+    parser.add_argument("--text_file",
+                        help="Path to the file sentences to be synthesized",
+                        required=True)
+
+    parser.add_argument("--checkpoint_path",
+                        help="Path to the checkpoint to synthesize from",
+                        required=True)
+
+    parser.add_argument("--max_decoder_steps",
+                        help="The max number of steps to run the decoder",
+                        required=True)
+
+    parser.add_argument("--speaker_id",
+                        help="Speaker id (in case of multispeaker synthesis)",
+                        required=False)
+
+    args = parser.parse_args()
+
+    out_dir = args.out_dir
+    text_file = args.text_file
+    checkpoint_path = args.checkpoint_path
+    max_decoder_steps = args.max_decoder_steps
+
+    speaker_id = int(args.speaker_id) if args.speaker_id else None
 
     # Model
     model = build_model()
 
-    # Load checkpoints separately
-    if checkpoint_postnet_path is not None and checkpoint_seq2seq_path is not None:
-        checkpoint = _load(checkpoint_seq2seq_path)
-        model.seq2seq.load_state_dict(checkpoint["state_dict"])
-        checkpoint = _load(checkpoint_postnet_path)
-        model.postnet.load_state_dict(checkpoint["state_dict"])
-        checkpoint_name = splitext(basename(checkpoint_seq2seq_path))[0]
-    else:
-        checkpoint = _load(checkpoint_path)
-        model.load_state_dict(checkpoint["state_dict"])
-        checkpoint_name = splitext(basename(checkpoint_path))[0]
+    # Load checkpoints
+    checkpoint = _load(checkpoint_path)
+    model.load_state_dict(checkpoint["state_dict"])
+    checkpoint_name = splitext(basename(checkpoint_path))[0]
 
     model.seq2seq.decoder.max_decoder_steps = max_decoder_steps
 
-    os.makedirs(dst_dir, exist_ok=True)
-    with open(text_list_file_path, "rb") as f:
-        lines = f.readlines()
+    os.makedirs(out_dir, exist_ok=True)
+
+    with open(text_file, "r") as file_reader:
+        lines = file_reader.readlines()
+        lines = [line.strip("\n") for line in lines]
+
         for idx, line in enumerate(lines):
-            text = line.decode("utf-8")[:-1]
-            words = nltk.word_tokenize(text)
-            waveform, alignment, _, _ = tts(
-                model, text, p=replace_pronunciation_prob, speaker_id=speaker_id, fast=True)
-            dst_wav_path = join(dst_dir, "{}_{}{}.wav".format(
-                idx, checkpoint_name, file_name_suffix))
-            dst_alignment_path = join(
-                dst_dir, "{}_{}{}_alignment.png".format(idx, checkpoint_name,
-                                                        file_name_suffix))
-            plot_alignment(alignment.T, dst_alignment_path,
-                           info="{}, {}".format(hparams.builder, basename(checkpoint_path)))
-            audio.save_wav(waveform, dst_wav_path)
-            name = splitext(basename(text_list_file_path))[0]
-            if output_html:
-                print("""
-{}
+            text = line[:-1]
+            waveform, alignment, _, _ = tts(model,
+                                            text,
+                                            speaker_id=speaker_id,
+                                            fast=True)
+            out_wav_path = join(out_dir,
+                                f"{idx}_{checkpoint_name}_synthesized.wav")
 
-({} chars, {} words)
+            out_alignment_path = join(
+                out_dir, f"{idx}_{checkpoint_name}_synthesized_alignment.png")
 
-<audio controls="controls" >
-<source src="/audio/{}/{}/{}" autoplay/>
-Your browser does not support the audio element.
-</audio>
+            plot_alignment(alignment.T,
+                           out_alignment_path,
+                           info=f"{cfg.builder}, {basename(checkpoint_path)}")
 
-<div align="center"><img src="/audio/{}/{}/{}" /></div>
-                  """.format(text, len(text), len(words),
-                             hparams.builder, name, basename(dst_wav_path),
-                             hparams.builder, name, basename(dst_alignment_path)))
-            else:
-                print(idx, ": {}\n ({} chars, {} words)".format(text, len(text), len(words)))
+            audio.save_wav(waveform, out_wav_path)
 
-    print("Finished! Check out {} for generated audio samples.".format(dst_dir))
+    print(f"Synthesis complete. Generated audio samples saved in {out_dir}")
+
     sys.exit(0)
