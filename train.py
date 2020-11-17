@@ -112,7 +112,7 @@ def eval_model(device, model, global_step, logs_dir, ismultispeaker):
             # Audio
             path = join(
                 eval_output_dir,
-                "step{global_step:09d}_text{idx}_{speaker_str}_predicted.wav")
+                f"step{global_step:09d}_text{idx}_{speaker_str}_predicted.wav")
             audio.save_wav(signal, path)
 
 
@@ -139,7 +139,7 @@ def save_states(global_step, attn, linear_outputs, input_lengths, logs_dir):
             save_alignment(path, alignment)
 
         # Save averaged alignment
-        alignment_dir = join(checkpoint_dir, "alignment_ave")
+        alignment_dir = join(logs_dir, "alignment_ave")
         os.makedirs(alignment_dir, exist_ok=True)
 
         path = join(alignment_dir,
