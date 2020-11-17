@@ -315,7 +315,7 @@ def train(device,
             # Update (backward pass)
             loss.backward()
             if clip_thresh > 0:
-                grad_norm = torch.nn.utils.clip_grad_norm_(
+                torch.nn.utils.clip_grad_norm_(
                     model.get_trainable_parameters(), clip_thresh)
             optimizer.step()
 
@@ -335,7 +335,7 @@ def train(device,
         global_epoch += 1
 
 
-def save_checkpoint(model, optimizer, step, checkpoint_dir, epoch):
+def save_checkpoint(model, optimizer, step, epoch, checkpoint_dir):
     """Write the checkpoint to disk
     """
     checkpoint_path = join(checkpoint_dir, f"checkpoint_step{step:09d}.pth")
