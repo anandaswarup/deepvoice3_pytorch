@@ -35,6 +35,15 @@ Supported datasets are:
 
 When this is done, you will see extracted features (mel-spectrograms and linear spectrograms) in `out_dir`.
 
+### 2. Training
+Usage:
+```
+python train.py --data_dir <path to the training data dir> \
+		--checkpoint_dir <path to the dir, where training checkpoints will be saved> \
+		--logs_dir <path to the dir, where training logs will be written> \
+		--checkpoint_path <if specified load checkpoint and restart training from that point>
+```
+
 ## Acknowledgements
 
 1. [Ryuichi Yamamoto's implementation of DeepVoice3](https://github.com/r9y9/deepvoice3_pytorch)
