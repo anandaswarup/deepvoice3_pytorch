@@ -85,6 +85,12 @@ def eval_model(device, model, global_step, logs_dir, ismultispeaker):
     eval_output_dir = join(logs_dir, "eval")
     os.makedirs(eval_output_dir, exist_ok=True)
 
+    eval_alignment_dir = join(eval_output_dir, "alignment")
+    os.makedirs(eval_alignment_dir, exist_ok=True)
+
+    eval_wav_dir = join(eval_output_dir, "wavs")
+    os.makedirs(eval_wav_dir, exist_ok=True)
+
     # Prepare model for evaluation
     model_eval = build_model().to(device)
     model_eval.load_state_dict(model.state_dict())
@@ -105,13 +111,13 @@ def eval_model(device, model, global_step, logs_dir, ismultispeaker):
 
             # Alignment
             path = join(
-                eval_output_dir,
+                eval_alignment_dir,
                 f"step{global_step:09d}_text{idx}_{speaker_str}_alignment.png")
             save_alignment(path, alignment)
 
             # Audio
             path = join(
-                eval_output_dir,
+                eval_wav_dir,
                 f"step{global_step:09d}_text{idx}_{speaker_str}_predicted.wav")
             audio.save_wav(signal, path)
 
