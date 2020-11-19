@@ -49,19 +49,19 @@ class Config:
 
     max_positions = 512  # Max input text length (try setting larger value if you want to give very long text input)
 
-    dropout = 1 - 0.95
+    dropout = 0.050000000000000044
 
-    text_embed_dim = 128
+    text_embed_dim = 256
 
     kernel_size = 3
-    encoder_channels = 256
+    encoder_channels = 512
     decoder_channels = 256
     converter_channels = 256
 
     query_position_rate = 1.0
     key_position_rate = 1.385
-    key_projection = False
-    value_projection = False
+    key_projection = True
+    value_projection = True
     use_memory_mask = True
     trainable_positional_encodings = False
     freeze_embedding = False
@@ -85,9 +85,9 @@ class Config:
     adam_beta1 = 0.5
     adam_beta2 = 0.9
     adam_eps = 1e-6
-    initial_learning_rate = 5e-4
+    initial_learning_rate = 0.0005
     lr_schedule = "noam_learning_rate_decay"
-    nepochs = 500
+    nepochs = 1000
     weight_decay = 0.0
     clip_thresh = 0.1
 
