@@ -9,7 +9,7 @@ class Config:
     dataset = "ljspeech"
 
     # Frontend [currently supports only English (en)]
-    frontend = 'en'
+    frontend = "en"
 
     # Must be configured based on the dataset and model being used
     # if builder = deepvoice3_multispeaker then dataset == libritts and num_speakers = 247
@@ -19,7 +19,7 @@ class Config:
 
     # Audio processing parameters
     num_mels = 80
-    fmin = 125
+    fmin = 50
     fmax = 7600
     fft_size = 1024
     hop_size = 256
@@ -51,17 +51,17 @@ class Config:
 
     dropout = 0.050000000000000044
 
-    text_embed_dim = 256
+    text_embed_dim = 128
 
     kernel_size = 3
-    encoder_channels = 512
+    encoder_channels = 256
     decoder_channels = 256
     converter_channels = 256
 
     query_position_rate = 1.0
     key_position_rate = 1.385
-    key_projection = True
-    value_projection = True
+    key_projection = False
+    value_projection = False
     use_memory_mask = True
     trainable_positional_encodings = False
     freeze_embedding = False
@@ -87,7 +87,7 @@ class Config:
     adam_eps = 1e-6
     initial_learning_rate = 0.0005
     lr_schedule = "noam_learning_rate_decay"
-    nepochs = 1000
+    nepochs = 2000
     weight_decay = 0.0
     clip_thresh = 0.1
 
