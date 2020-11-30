@@ -87,7 +87,7 @@ class Config:
     adam_eps = 1e-6
     initial_learning_rate = 0.0005
     lr_schedule = "noam_learning_rate_decay"
-    nepochs = 2000
+    nepochs = 1500
     weight_decay = 0.0
     clip_thresh = 0.1
 
